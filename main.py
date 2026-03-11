@@ -50,9 +50,6 @@ def main():
         print(f"\n Starting grid search on device {device}...")
 
         for lr, bs in itertools.product(lrs, bss):
-            print(f"\nTesting: LR={lr}, Batch Size={bs}")
-            print("-" * 30)
-
             config['training']['learning_rate'] = lr
             config['training']['batch_size'] = bs
 
@@ -62,6 +59,9 @@ def main():
 
             exp_name = f"lr_{lr}_bs_{bs}"
             writer = SummaryWriter(log_dir=f"{config['training']['log_dir']}/{exp_name}")
+
+            print(f"\nTesting: LR={lr}, Batch Size={bs}")
+            print("-" * 50)
 
             run_acc = train_model(model, epochs, device, train_loader, test_loader, optimizer, criterion, writer, config, filename=f"best_{exp_name}.pth.tar")
 

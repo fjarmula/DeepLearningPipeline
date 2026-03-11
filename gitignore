@@ -1,12 +1,12 @@
 # Deep Learning Outputs
-checkpoints/
-runs/
+checkpoints/*
+runs/*
 
 # Dataset
-data/
+data/*
 
 # Python System Files
-__pycache__/
+__pycache__/*
 *.pyc
 
 # OS Files

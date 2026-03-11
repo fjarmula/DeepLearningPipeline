@@ -58,6 +58,7 @@ def train_model(model, epochs, device, train_loader, test_loader, optimizer, cri
                             config['training']['checkpoint_dir'], filename=filename)
 
         print(f"Epoch {epoch+1:02d} | Train Loss: {train_loss:.4f} | Val Acc: {val_acc:.2f}%")
+    print(f"Best Validation Accuracy for this run: {run_best_acc:.2f}%")
 
     return run_best_acc
 
