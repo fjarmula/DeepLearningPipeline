@@ -1,5 +1,13 @@
-.gitignore
-./checkpoints*
-./data*
-./runs*
-./__pycache__*
+# Deep Learning Outputs
+checkpoints/
+runs/
+
+# Dataset
+data/
+
+# Python System Files
+__pycache__/
+*.pyc
+
+# OS Files
+.DS_Store
