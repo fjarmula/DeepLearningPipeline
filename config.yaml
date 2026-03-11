@@ -1,0 +1,19 @@
+model:
+  input_size: 1
+  num_classes: 10
+
+training:
+    batch_size: 64
+    learning_rate: 0.001
+    epochs: 20
+    log_dir: "runs/mnist_experiment"
+    checkpoint_dir: "checkpoints"
+
+    param_grid:
+      learning_rate: [0.0001, 0.001, 0.01, 0.1]
+      batch_size: [8, 16, 32, 64, 128]
+
+data:
+  root: "./data"
+  subset_train: 400
+  subset_test: 600
