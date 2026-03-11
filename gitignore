@@ -1,4 +1,5 @@
 .gitignore
-./checkpoints
-./data
-./runs
+./checkpoints*
+./data*
+./runs*
+./__pycache__*
