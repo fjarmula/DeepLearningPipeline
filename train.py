@@ -20,7 +20,7 @@ def train_one_epoch(model, device, loader, optimizer, criterion):
         _, pred = torch.max(output, 1)
         correct += (pred == target).sum().item()
 
-    return running_loss / len(loader), 100 * correct / len(loader.dataset) # Return average loss and accuracy
+    return running_loss / len(loader), 100 * correct / len(loader.dataset)
 
 def validate(model, device, loader, criterion):
     model.eval()

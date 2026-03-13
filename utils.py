@@ -2,7 +2,14 @@ import torch
 import yaml
 import os
 import argparse
+import numpy as np
+import random
 from model import SimpleCNN
+
+def set_seed(seed=42):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
 
 
 def get_device():
@@ -27,11 +34,11 @@ def get_args():
     parser.add_argument('--epochs', type=int)
     parser.add_argument('--grid_search', action='store_true')
 
-    # Overrides for grid search parameters
-    parser.add_argument('--lr', type=float)
-    parser.add_argument('--batch_size', type=int)
-    parser.add_argument('--optimizer', type=str)
-    parser.add_argument("--weight_decay", type=float)
+    parser.add_argument('--lr', nargs='+', type=float, help='List of learning rates')
+    parser.add_argument('--batch_size', nargs='+', type=int, help='List of batch sizes')
+    parser.add_argument('--optimizer', nargs='+', type=str, help='List of optimizers (e.g. adam sgd)')
+    parser.add_argument("--weight_decay", nargs='+', type=float, help='List of weight decay values')
+
     return parser.parse_args()
 
 

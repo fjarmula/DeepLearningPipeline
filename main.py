@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 import itertools
 from model import SimpleCNN
-from utils import get_args, get_device, load_config, get_optimizer, save_checkpoint
+from utils import *
 from preprocessing import get_dataloaders
 from train import train_model
 
@@ -12,17 +12,18 @@ def main():
     args = get_args()
     device = get_device()
     config = load_config(args.config)
+    set_seed(config['training']['seed'])
 
     if args.grid_search:
-        lrs = config['training']['param_grid']['learning_rate']
-        bss = config['training']['param_grid']['batch_size']
-        opts = [args.optimizer] if args.optimizer else ["adam", "sgd"]
-        wds = [args.weight_decay] if args.weight_decay is not None else [0.0, 1e-4] # make sure to include 0.0 for no weight decay
-    else: # standard training, using list for uniformity in the loop
-        lrs = [args.lr or config['training']['learning_rate']]
-        bss = [args.batch_size or config['training']['batch_size']]
-        opts = [args.optimizer or config['training']['optimizer']]
-        wds = [args.weight_decay if args.weight_decay is not None else config['training']['weight_decay']]
+        lrs = args.lr if args.lr else config['training']['param_grid']['learning_rate']
+        bss = args.batch_size if args.batch_size else config['training']['param_grid']['batch_size']
+        opts = args.optimizer if args.optimizer else ["adam", "sgd"]
+        wds = args.weight_decay if args.weight_decay is not None else [0.0, 1e-4]
+    else:
+        lrs = [args.lr[0]] if args.lr else [config['training']['learning_rate']]
+        bss = [args.batch_size[0]] if args.batch_size else [config['training']['batch_size']]
+        opts = [args.optimizer[0]] if args.optimizer else [config['training']['optimizer']]
+        wds = [args.weight_decay[0]] if args.weight_decay else [config['training']['weight_decay']]
 
     global_best_acc = 0.0
     best_params = None
@@ -36,8 +37,7 @@ def main():
     print(f"Device: {device} | Epochs: {epochs}")
     print(f"{'=' * 60}\n")
 
-    # itertools.product creates every possible combination of parameters
-    for lr, bs, opt_name, wd in itertools.product(lrs, bss, opts, wds):
+    for i, (lr, bs, opt_name, wd) in enumerate(itertools.product(lrs, bss, opts, wds), 1):
 
         config['training']['batch_size'] = bs
         train_loader, test_loader = get_dataloaders(config)
@@ -48,7 +48,7 @@ def main():
         exp_name = f"lr{lr}_bs{bs}_{opt_name}_wd{wd}"
         writer = SummaryWriter(log_dir=f"{config['training']['log_dir']}/{exp_name}")
 
-        print(f"Testing: LR={lr}, BS={bs}, Optimizer={opt_name}, WD={wd}")
+        print(f"[{i}/{total_experiments}] Testing: LR={lr}, BS={bs}, Optimizer={opt_name}, WD={wd}")
         print("-" * 40)
 
         run_acc = train_model(
