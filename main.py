@@ -4,19 +4,15 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from model import SimpleCNN
+from utils import get_args
 from utils import save_checkpoint
 from utils import get_device, load_config
 from preprocessing import get_dataloaders
 from train import train_one_epoch, validate, train_model
 
 def main():
-    parser = argparse.ArgumentParser(description='Deep Learning')
-    parser.add_argument('--config', type=str, default='config.yaml', help='Path to config file')
-    parser.add_argument('--epochs', type=int, help='Override epochs in ''config')
-    parser.add_argument('--lr', type=float, help='Override learning rate')
-    parser.add_argument('--batch_size', type=int, help='Override batch size')
-    parser.add_argument('--grid_search', action='store_true', help='Run grid search')
-    args = parser.parse_args()
+    args = get_args()
+    device = get_device()
 
     config = load_config(args.config)
     if args.epochs:
@@ -29,7 +25,6 @@ def main():
     global_best_acc = 0.0
     best_params = None
 
-    device = get_device()
     epochs = config['training']['epochs']
     criterion = nn.CrossEntropyLoss()
 
