@@ -2,6 +2,8 @@ import torch
 import yaml
 import os
 import argparse
+from model import SimpleCNN
+
 
 def get_device():
     return torch.device("cuda" if torch.cuda.is_available() else "mps" if
@@ -18,13 +20,25 @@ def save_checkpoint(state, directory, filename="checkpoint.pth.tar"):
     path = os.path.join(directory, filename)
     torch.save(state, path)
 
+
 def get_args():
     parser = argparse.ArgumentParser(description='MNIST CNN Training')
+    parser.add_argument('--config', type=str, default='config.yaml')
+    parser.add_argument('--epochs', type=int)
+    parser.add_argument('--grid_search', action='store_true')
 
-    parser.add_argument('--config', type=str, default='config.yaml', help='Path to config file')
-    parser.add_argument('--epochs', type=int, help='Override epochs in ''config')
-    parser.add_argument('--lr', type=float, help='Override learning rate')
-    parser.add_argument('--batch_size', type=int, help='Override batch size')
-    parser.add_argument('--grid_search', action='store_true', help='Run grid search')
-
+    # Overrides for grid search parameters
+    parser.add_argument('--lr', type=float)
+    parser.add_argument('--batch_size', type=int)
+    parser.add_argument('--optimizer', type=str)
+    parser.add_argument("--weight_decay", type=float)
     return parser.parse_args()
+
+
+def get_optimizer(model, opt_name, lr, wd):
+    opt_name = opt_name.lower()
+    if opt_name == "sgd":
+        return torch.optim.SGD(model.parameters(), lr=lr, weight_decay=wd, momentum=0.9)
+    if opt_name == "adam":
+        return torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
+    raise ValueError(f"Optimizer {opt_name} not supported")

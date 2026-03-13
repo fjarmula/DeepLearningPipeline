@@ -8,6 +8,8 @@ training:
     epochs: 20
     log_dir: "runs/mnist_experiment"
     checkpoint_dir: "checkpoints"
+    weight_decay: 0.0
+    optimizer: adam
 
     param_grid:
       learning_rate: [0.0001, 0.001, 0.01, 0.1]
