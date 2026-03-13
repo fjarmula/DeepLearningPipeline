@@ -15,5 +15,5 @@ training:
 
 data:
   root: "./data"
-  subset_train: 400
-  subset_test: 600
+  subset_train: 800
+  subset_test: 100
