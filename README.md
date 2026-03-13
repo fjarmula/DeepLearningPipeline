@@ -28,7 +28,6 @@ The optimization identified the following top-performing parameters:
 * **Learning Rate:** `0.001`
 * **Batch Size:** `8`
 * **Max Validation Accuracy:** **97.00%**
-* **Checkpoint:** `checkpoints/absolute_best_model.pth.tar`
 
 ### 4. Key Observations from TensorBoard
 
@@ -90,7 +89,7 @@ The optimization process identified the following top-performing setup:
 ##### Why this won:
 While Adam is often the "default" choice, **SGD with Momentum** and a higher learning rate (0.01) found a better local minimum. The addition of **Weight Decay** acted as a crucial stabilizer, preventing the model from over-tuning to the noise in the small training subset.
 
-### 3. Final Conclusion & Next Steps
+### 3. Conclusion
 For this CNN architecture on MNIST:
 1.  **SGD (0.01)** is superior for peak accuracy but requires careful LR selection.
 2.  **Adam (0.0001)** is the most "user-friendly" as it provides high accuracy (93-94%) across almost any configuration.
