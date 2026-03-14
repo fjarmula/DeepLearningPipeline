@@ -1,5 +1,4 @@
 # 1. Hyperparameter Analysis
-
 ### 1. Methodology
 - **Training Subset:** 800 images
 - **Validation Subset:** 100 images
@@ -11,6 +10,7 @@
   - **Optimizer:** Adam
   - **Loss Function:** Cross-Entropy Loss
   - **Weight Decay:** 0.0
+
 
 ### 2. Results Summary (Validation Accuracy)
 
@@ -47,13 +47,13 @@ so drastically, the model stagnated at ~15% accuracy (near-random guessing).
 
 
 
-
-
 #### Efficiency vs. Speed (LR 0.0001)
 While $LR = 0.0001$ eventually reached high accuracies (93%), the "slope" of improvement was significantly flatter. This indicates that while the model is learning, it is being inefficient with the available compute compared to the $0.001$ trials.
 
 ### 5. Conclusion
 For final deployment on the full MNIST dataset (60,000 images), **LR 0.001** is recommended as the primary learning rate. While **BS 8** provided the highest accuracy on this subset, a larger batch size (e.g., **BS 64**) may be preferred for full-scale training to utilize hardware parallelism more effectively, as it maintained a high 94% accuracy.
+
+---
 
 # 2. Optimizer & Weight Decay Analysis
 **Dataset Subset:** 800 Train / 100 Validation
@@ -77,7 +77,7 @@ For final deployment on the full MNIST dataset (60,000 images), **LR 0.001** is 
 
 ---
 
-## 2. Best Configuration Found
+### 2. Best Configuration Found
 
 The optimization process identified the following top-performing setup:
 
@@ -94,3 +94,49 @@ For this CNN architecture on MNIST:
 1.  **SGD (0.01)** is superior for peak accuracy but requires careful LR selection.
 2.  **Adam (0.0001)** is the most "user-friendly" as it provides high accuracy (93-94%) across almost any configuration.
 3.  **Weight Decay** is mandatory for small-batch training to prevent overfitting.
+
+# 3. Architecture Performance Analysis
+**Dataset Subset:** 6000 Train / 1000 Validation
+**Fixed Parameters:** Learning Rate = 0.001,
+Batch Size = 16,
+Optimizer = SGD,
+Weight Decay = 1e-05
+
+### Executive Summary
+The experiment successfully compared five different CNN architectures on the MNIST dataset using a consistent hyperparameter set:
+* **Learning Rate:** 0.001
+* **Batch Size:** 16
+* **Optimizer:** SGD
+* **Weight Decay:** 1e-05
+
+The **Stabilized** model achieved the highest accuracy (**98.50%**), while the **SimpleCNN** proved to be the least efficient, requiring over 1.1 million parameters to achieve the lowest performance of the group.
+
+---
+
+### 1. Performance Comparison Table
+
+| Architecture | Accuracy (%) | Parameters | Time (s) | Convergence Epoch |
+| :--- | :--- | :--- | :--- | :--- |
+| **Stabilized** | **98.50** | 207,018 | 62.35 | 38 |
+| **High-Vision** | 98.00 | 215,370 | 53.34 | 30 |
+| **Baseline** | 97.90 | 206,922 | 51.52 | 36 |
+| **Modernist** | 97.40 | 206,922 | 51.65 | 33 |
+| **SimpleCNN** | 97.30 | 1,199,882 | 57.30 | 27 |
+
+---
+
+### 2. Key Insights & Analysis
+
+#### The "Stabilization" Advantage
+The **Stabilized** model (incorporating BatchNorm and Dropout) reached the highest accuracy of **98.50%**. Although it had the longest training time (62.35s), the addition of Batch Normalization allowed the model to generalize better and achieve a higher performance ceiling than the "raw" architectures.
+
+#### Efficiency: SimpleCNN vs. Experimental Models
+The **SimpleCNN** is significantly over-parameterized for this task. It utilizes **1,199,882** parameters—nearly 6 times more than the **Baseline**—yet it produced the lowest accuracy. This confirms that modern CNN design (using Pooling and deeper, narrower layers) is far superior to legacy designs with massive Fully Connected layers.
+
+#### Convergence and Stability
+* **Earliest Convergence:** **SimpleCNN** (Epoch 27). Due to its high parameter count, it minimizes training loss rapidly but plateaus early on validation accuracy, suggesting a slight tendency toward overfitting.
+* **Balanced Convergence:** **High-Vision** (Epoch 30). By utilizing a larger $5 \times 5$ kernel, this model captured more spatial information per layer, resulting in strong accuracy (98.00%) with a very competitive training time.
+
+#### Modernist (GELU) vs. Baseline (ReLU)
+In this specific experiment, the **Baseline (ReLU)** slightly outperformed the **Modernist (GELU)** (97.90% vs 97.40%). This indicates that for a relatively simple feature set like MNIST, the extra computational complexity of the GELU activation function does not necessarily translate to higher accuracy.
+

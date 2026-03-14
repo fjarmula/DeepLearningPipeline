@@ -78,13 +78,13 @@ def main():
 
             exp_name = f"{arch['name']}_lr{lr}_bs{bs}_{opt_name}_wd{wd}"
 
-            print(f"\nRun [{current_run_idx}/{total_runs}]: Testing: lr={lr}, lr={bs}, optimizer={opt_name}, wd={wd}")
+            print(f"\nRun [{current_run_idx}/{total_runs}]: Testing: lr={lr}, bs={bs}, optimizer={opt_name}, wd={wd}")
             print(f"Parameters: {param_count:,}")
 
             writer = SummaryWriter(log_dir=f"{log_dir}/{exp_name}")
             writer.add_scalar("Config/ParamCount", param_count)
 
-            (run_acc, run_best_weights), duration = timed_train_model(
+            (run_acc, run_best_weights, convergence_epoch), duration = timed_train_model(
                 model=model,
                 epochs=epochs,
                 device=device,
@@ -114,9 +114,14 @@ def main():
                     "opt": opt_name,
                     "wd": wd
                 }
+                save_checkpoint({
+                    'model_state_dict': run_best_weights,
+                    'acc': global_best_acc,
+                    'config': best_overall_config
+                }, config['training']['checkpoint_dir'], filename='best_overall_model.pth.tar')
 
             writer.close()
-            print(f"Run {current_run_idx} Completed | Accuracy: {run_acc:.2f}% | Time: {duration:.2f}s")
+            print(f"\nRun {current_run_idx} Completed | Accuracy: {run_acc:.2f}% | Time: {duration:.2f}s | Convergence epoch: {convergence_epoch}")
 
     print("\n" + "=" * 60)
     print("FINAL SUMMARY")
