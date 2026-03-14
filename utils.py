@@ -4,6 +4,8 @@ import os
 import argparse
 import numpy as np
 import random
+import time
+from functools import wraps
 from model import SimpleCNN
 
 def set_seed(seed=42):
@@ -50,3 +52,13 @@ def get_optimizer(model, opt_name, lr, wd):
     if opt_name == "adam":
         return torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
     raise ValueError(f"Optimizer {opt_name} not supported")
+
+
+def measure_time(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        return result, end - start
+    return wrapper

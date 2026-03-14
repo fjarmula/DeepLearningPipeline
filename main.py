@@ -42,6 +42,8 @@ def main():
     print(f"Device: {device} | Epochs: {epochs}")
     print(f"{'=' * 60}\n")
 
+    timed_train_model = measure_time(train_model)
+
     for i, (lr, bs, opt_name, wd) in enumerate(itertools.product(lrs, bss, opts, wds), 1):
 
         config['training']['batch_size'] = bs
@@ -56,7 +58,7 @@ def main():
         print(f"[{i}/{total_experiments}] Testing: LR={lr}, BS={bs}, Optimizer={opt_name}, WD={wd}")
         print("-" * 40)
 
-        run_acc, run_best_weights = train_model(
+        (run_acc, run_best_weights), duration = timed_train_model(
             model=model,
             epochs=epochs,
             device=device,
@@ -66,6 +68,7 @@ def main():
             criterion=criterion,
             writer=writer,
         )
+        print(f"Trial completed in {duration:.2f}s")
 
         if run_acc > global_best_acc:
             global_best_acc = run_acc
