@@ -12,18 +12,23 @@ def main():
     args = get_args()
     device = get_device()
     config = load_config(args.config)
-    set_seed(config['training']['seed'])
+    #set_seed(config['training']['seed'])
 
     if args.grid_search:
         lrs = args.lr if args.lr else config['training']['param_grid']['learning_rate']
         bss = args.batch_size if args.batch_size else config['training']['param_grid']['batch_size']
         opts = args.optimizer if args.optimizer else ["adam", "sgd"]
         wds = args.weight_decay if args.weight_decay is not None else [0.0, 1e-4]
+        log_dir = args.logdir if args.logdir is not None else config['training']['log_dir_grid']
+        filename = "best_model_grid.pth.tar"
+
     else:
-        lrs = [args.lr[0]] if args.lr else [config['training']['learning_rate']]
-        bss = [args.batch_size[0]] if args.batch_size else [config['training']['batch_size']]
-        opts = [args.optimizer[0]] if args.optimizer else [config['training']['optimizer']]
-        wds = [args.weight_decay[0]] if args.weight_decay else [config['training']['weight_decay']]
+        lrs = [args.lr[0]] if args.lr is not None else [config['training']['learning_rate']]
+        bss = [args.batch_size[0]] if args.batch_size is not None else [config['training']['batch_size']]
+        opts = [args.optimizer[0]] if args.optimizer is not None else [config['training']['optimizer']]
+        wds = [args.weight_decay[0]] if args.weight_decay is not None else [config['training']['weight_decay']]
+        log_dir = args.logdir if args.logdir is not None else config['training']['log_dir']
+        filename = "best_model_standard.pth.tar"
 
     global_best_acc = 0.0
     best_params = None
@@ -46,12 +51,12 @@ def main():
         optimizer = get_optimizer(model, opt_name, lr, wd)
 
         exp_name = f"lr{lr}_bs{bs}_{opt_name}_wd{wd}"
-        writer = SummaryWriter(log_dir=f"{config['training']['log_dir']}/{exp_name}")
+        writer = SummaryWriter(log_dir=f"{log_dir}/{exp_name}")
 
         print(f"[{i}/{total_experiments}] Testing: LR={lr}, BS={bs}, Optimizer={opt_name}, WD={wd}")
         print("-" * 40)
 
-        run_acc = train_model(
+        run_acc, run_best_weights = train_model(
             model=model,
             epochs=epochs,
             device=device,
@@ -60,8 +65,6 @@ def main():
             optimizer=optimizer,
             criterion=criterion,
             writer=writer,
-            config=config,
-            filename=f"best_{exp_name}.pth.tar"
         )
 
         if run_acc > global_best_acc:
@@ -75,13 +78,13 @@ def main():
 
             print(f"New Global Best! Accuracy: {global_best_acc:.2f}%")
             save_checkpoint({
-                'model_state_dict': model.state_dict(),
+                'model_state_dict': run_best_weights,
                 'best_acc': global_best_acc,
                 'params': best_params
-            }, config['training']['checkpoint_dir'], filename="absolute_best_model.pth.tar")
+            }, config['training']['checkpoint_dir'], filename=filename)
 
         writer.close()
-        print(f"Done with: {exp_name}\n")
+        print()
 
     # 6. Final Summary
     print("\n" + "=" * 60)
@@ -89,8 +92,8 @@ def main():
     print("-" * 60)
     print(f"Best Accuracy: {global_best_acc:.2f}%")
     print(f"Best Parameters: {best_params}")
-    print(f"Top Model Saved to: {config['training']['checkpoint_dir']}/absolute_best_model.pth.tar")
-    print(f"Visualize all runs with: tensorboard --logdir={config['training']['log_dir']}")
+    print(f"Top Model Saved to: {config['training']['checkpoint_dir']}/{filename}")
+    print(f"Visualize all runs with: tensorboard --logdir={log_dir}")
     print("=" * 60 + "\n")
 
 

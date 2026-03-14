@@ -1,5 +1,6 @@
 import torch
 import itertools
+import copy
 from utils import save_checkpoint
 
 def train_one_epoch(model, device, loader, optimizer, criterion):
@@ -39,10 +40,11 @@ def validate(model, device, loader, criterion):
     return val_loss/len(loader), 100 * correct / total
 
 
-def train_model(model, epochs, device, train_loader, test_loader, optimizer, criterion, writer, config, filename="standard_best_model.pth.tar"):
+def train_model(model, epochs, device, train_loader, test_loader, optimizer, criterion, writer):
     run_best_acc = 0.0
+    best_model_state = None
 
-    for epoch in range(0, epochs):
+    for epoch in range(epochs):
         train_loss, train_acc = train_one_epoch(model, device, train_loader, optimizer, criterion)
         val_loss, val_acc = validate(model, device, test_loader, criterion)
 
@@ -51,16 +53,11 @@ def train_model(model, epochs, device, train_loader, test_loader, optimizer, cri
 
         if val_acc > run_best_acc:
             run_best_acc = val_acc
-            save_checkpoint({'epoch': epoch,
-                                'model_state_dict': model.state_dict(),
-                             'optimizer_state_dict': optimizer.state_dict(),
-                             'best_acc': run_best_acc},
-                            config['training']['checkpoint_dir'], filename=filename)
+            best_model_state = copy.deepcopy(model.state_dict())
 
-        print(f"Epoch {epoch+1:02d} | Train Loss: {train_loss:.4f} | Val Acc: {val_acc:.2f}%")
-    print(f"Best Validation Accuracy for this run: {run_best_acc:.2f}%")
+        print(f"Epoch {epoch + 1:02d} | Train Loss: {train_loss:.4f} | Val Acc: {val_acc:.2f}%")
 
-    return run_best_acc
+    return run_best_acc, best_model_state
 
 
 

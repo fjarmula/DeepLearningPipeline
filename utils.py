@@ -33,6 +33,7 @@ def get_args():
     parser.add_argument('--config', type=str, default='config.yaml')
     parser.add_argument('--epochs', type=int)
     parser.add_argument('--grid_search', action='store_true')
+    parser.add_argument('--logdir', type=str)
 
     parser.add_argument('--lr', nargs='+', type=float, help='List of learning rates')
     parser.add_argument('--batch_size', nargs='+', type=int, help='List of batch sizes')
