@@ -41,6 +41,7 @@ def get_args():
     parser.add_argument('--batch_size', nargs='+', type=int, help='List of batch sizes')
     parser.add_argument('--optimizer', nargs='+', type=str, help='List of optimizers (e.g. adam sgd)')
     parser.add_argument("--weight_decay", nargs='+', type=float, help='List of weight decay values')
+    parser.add_argument('--model', type=str, help='Specific model to run (e.g., SimpleCNN, Stabilized)')
 
     return parser.parse_args()
 

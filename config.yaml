@@ -4,14 +4,14 @@ model:
 
 training:
     seed: 42
-    batch_size: 64
+    batch_size: 16
     learning_rate: 0.001
-    epochs: 20
+    epochs: 30
     log_dir: "runs/mnist_experiment/standard"
     log_dir_grid: "runs/mnist_experiment/grid_search"
     checkpoint_dir: "checkpoints"
-    weight_decay: 0.0
-    optimizer: adam
+    weight_decay: 0.1e-4
+    optimizer: sgd
 
     param_grid:
       learning_rate: [0.0001, 0.001, 0.01, 0.1]
@@ -19,5 +19,5 @@ training:
 
 data:
   root: "./data"
-  subset_train: 800
-  subset_test: 100
+  subset_train: 6000
+  subset_test: 1000
