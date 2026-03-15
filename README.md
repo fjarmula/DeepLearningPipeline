@@ -109,6 +109,14 @@ The experiment successfully compared five different CNN architectures on the MNI
 * **Optimizer:** SGD
 * **Weight Decay:** 1e-05
 
+| Model Name | Type | Activation | Batch Norm | Dropout | Kernel Size | MaxPool Layers |
+| :--- | :--- | :--- | :--- | :--- | :--- |:--- |
+| **SimpleCNN** | Standard | ReLU | No | 0.0 | 3 | 1 |
+| **Baseline** | Experimental | ReLU | No | 0.0 | 3 | 2 |
+| **Stabilized** | Experimental | ReLU | Yes | 0.3 | 3 | 2 |
+| **High-Vision** | Experimental | ReLU | No | 0.0 | 5 | 2 |
+| **Modernist** | Experimental | GELU | No | 0.0 | 3 |  2 |
+
 The **Stabilized** model achieved the highest accuracy (**98.50%**), while the **SimpleCNN** proved to be the least efficient, requiring over 1.1 million parameters to achieve the lowest performance of the group.
 
 ---
