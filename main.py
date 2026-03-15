@@ -13,33 +13,16 @@ def main():
     device = get_device()
     config = load_config(args.config)
 
-    architectures = [
-        {"name": "SimpleCNN", "type": "standard"},
-        {"name": "Baseline", "type": "exp", "act": "relu", "bn": False, "drop": 0.0, "ks": 3},
-        {"name": "Stabilized", "type": "exp", "act": "relu", "bn": True, "drop": 0.3, "ks": 3},
-        {"name": "High-Vision", "type": "exp", "act": "relu", "bn": False, "drop": 0.0, "ks": 5},
-        {"name": "Modernist", "type": "exp", "act": "gelu", "bn": False, "drop": 0.0, "ks": 3},
-    ]
+    seeds_to_test = [None, None, None, 42, 42, 42]
 
-    if args.grid_search:
-        lrs = args.lr or config['training']['param_grid']['learning_rate']
-        bss = args.batch_size or config['training']['param_grid']['batch_size']
-        opts = args.optimizer or ["adam", "sgd"]
-        wds = args.weight_decay if args.weight_decay is not None else [0.0, 1e-4]
-        log_dir = args.logdir or config['training']['log_dir_grid']
-    else:
-        lrs = [args.lr[0]] if args.lr else [config['training']['learning_rate']]
-        bss = [args.batch_size[0]] if args.batch_size else [config['training']['batch_size']]
-        opts = [args.optimizer[0]] if args.optimizer else [config['training']['optimizer']]
-        wds = [args.weight_decay[0]] if args.weight_decay is not None else [config['training']['weight_decay']]
-        log_dir = args.logdir or config['training']['log_dir']
-
+    architectures = get_architectures()
+    lrs, bss, opts, wds, log_dir = prepare_training_params(config, args)
     train_subset, test_subset = load_datasets(config)
 
     active_archs = [a for a in architectures if not args.model or a['name'].lower() == args.model.lower()]
 
     hyper_combinations = len(list(itertools.product(lrs, bss, opts, wds)))
-    total_runs = len(active_archs) * hyper_combinations
+    total_runs = len(active_archs) * hyper_combinations * len(seeds_to_test)
     current_run_idx = 0
 
     global_best_acc = 0.0
@@ -54,74 +37,79 @@ def main():
     print(f"Subset Sizes: Train={len(train_subset)}, Test={len(test_subset)}")
     print("-" * 60)
 
-    for arch in active_archs:
-        arch_best_acc = 0.0
-        print(f"\nArchitecture: {arch['name']}")
 
-        for lr, bs, opt_name, wd in itertools.product(lrs, bss, opts, wds):
-            current_run_idx += 1
 
-            train_loader, test_loader = get_dataloaders(train_subset, test_subset, bs)
+    for i, seed in enumerate(seeds_to_test):
+        print(f"Seed: {seed}")
 
-            if arch['type'] == "standard":
-                model = SimpleCNN().to(device)
-            else:
-                model = ExperimentalCNN(
-                    activation=arch['act'],
-                    use_batchnorm=arch['bn'],
-                    dropout_p=arch['drop'],
-                    kernel_size=arch['ks']
-                ).to(device)
+        for arch in active_archs:
+            arch_best_acc = 0.0
+            print(f"\nArchitecture: {arch['name']}")
 
-            optimizer = get_optimizer(model, opt_name, lr, wd)
-            param_count = sum(p.numel() for p in model.parameters())
+            for lr, bs, opt_name, wd in itertools.product(lrs, bss, opts, wds):
+                current_run_idx += 1
 
-            exp_name = f"{arch['name']}_lr{lr}_bs{bs}_{opt_name}_wd{wd}"
+                train_loader, test_loader = get_dataloaders(train_subset, test_subset, bs)
 
-            print(f"\nRun [{current_run_idx}/{total_runs}]: Testing: lr={lr}, bs={bs}, optimizer={opt_name}, wd={wd}")
-            print(f"Parameters: {param_count:,}")
+                if arch['type'] == "standard":
+                    model = SimpleCNN().to(device)
+                else:
+                    model = ExperimentalCNN(
+                        activation=arch['act'],
+                        use_batchnorm=arch['bn'],
+                        dropout_p=arch['drop'],
+                        kernel_size=arch['ks']
+                    ).to(device)
 
-            writer = SummaryWriter(log_dir=f"{log_dir}/{exp_name}")
-            writer.add_scalar("Config/ParamCount", param_count)
+                optimizer = get_optimizer(model, opt_name, lr, wd)
+                param_count = sum(p.numel() for p in model.parameters())
 
-            (run_acc, run_best_weights, convergence_epoch), duration = timed_train_model(
-                model=model,
-                epochs=epochs,
-                device=device,
-                train_loader=train_loader,
-                test_loader=test_loader,
-                optimizer=optimizer,
-                criterion=criterion,
-                writer=writer,
-            )
+                exp_name = f"{arch['name']}_lr{lr}_bs{bs}_{opt_name}_wd{wd}_seed{seed}"
 
-            if run_acc > arch_best_acc:
-                arch_best_acc = run_acc
-                arch_filename = f'best_{arch["name"]}.pth.tar'
-                save_checkpoint({
-                    'model_state_dict': run_best_weights,
-                    'acc': arch_best_acc,
-                    'arch': arch,
-                    'params': {'lr': lr, 'bs': bs, 'opt': opt_name, 'wd': wd}
-                }, config['training']['checkpoint_dir'], filename=arch_filename)
+                print(f"\nRun [{current_run_idx}/{total_runs}]: Testing: lr={lr}, bs={bs}, optimizer={opt_name}, wd={wd}")
+                print(f"Parameters: {param_count:,}")
 
-            if run_acc > global_best_acc:
-                global_best_acc = run_acc
-                best_overall_config = {
-                    "arch": arch['name'],
-                    "lr": lr,
-                    "bs": bs,
-                    "opt": opt_name,
-                    "wd": wd
-                }
-                save_checkpoint({
-                    'model_state_dict': run_best_weights,
-                    'acc': global_best_acc,
-                    'config': best_overall_config
-                }, config['training']['checkpoint_dir'], filename='best_overall_model.pth.tar')
+                writer = SummaryWriter(log_dir=f"{log_dir}/{exp_name}")
+                writer.add_scalar("Config/ParamCount", param_count)
 
-            writer.close()
-            print(f"\nRun {current_run_idx} Completed | Accuracy: {run_acc:.2f}% | Time: {duration:.2f}s | Convergence epoch: {convergence_epoch}")
+                (run_acc, run_best_weights, convergence_epoch), duration = timed_train_model(
+                    model=model,
+                    epochs=epochs,
+                    device=device,
+                    train_loader=train_loader,
+                    test_loader=test_loader,
+                    optimizer=optimizer,
+                    criterion=criterion,
+                    writer=writer,
+                )
+
+                if run_acc > arch_best_acc:
+                    arch_best_acc = run_acc
+                    arch_filename = f'best_{arch["name"]}_seed{seed}.pth.tar'
+                    save_checkpoint({
+                        'model_state_dict': run_best_weights,
+                        'acc': arch_best_acc,
+                        'arch': arch,
+                        'params': {'lr': lr, 'bs': bs, 'opt': opt_name, 'wd': wd}
+                    }, config['training']['checkpoint_dir'], filename=arch_filename)
+
+                if run_acc > global_best_acc:
+                    global_best_acc = run_acc
+                    best_overall_config = {
+                        "arch": arch['name'],
+                        "lr": lr,
+                        "bs": bs,
+                        "opt": opt_name,
+                        "wd": wd
+                    }
+                    save_checkpoint({
+                        'model_state_dict': run_best_weights,
+                        'acc': global_best_acc,
+                        'config': best_overall_config
+                    }, config['training']['checkpoint_dir'], filename='best_overall_model.pth.tar')
+
+                writer.close()
+                print(f"\nRun {current_run_idx} Completed | Accuracy: {run_acc:.2f}% | Time: {duration:.2f}s | Convergence epoch: {convergence_epoch}")
 
     print("\n" + "=" * 60)
     print("FINAL SUMMARY")

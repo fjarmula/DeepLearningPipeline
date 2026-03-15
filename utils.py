@@ -8,10 +8,13 @@ import time
 from functools import wraps
 from model import SimpleCNN
 
-def set_seed(seed=42):
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
+
+def set_seed(seed=None):
+    if seed is not None:
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
 
 def get_device():
@@ -21,6 +24,7 @@ def get_device():
 def load_config(config_path):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
+
     return config
 
 def save_checkpoint(state, directory, filename="checkpoint.pth.tar"):
@@ -62,4 +66,30 @@ def measure_time(func):
         result = func(*args, **kwargs)
         end = time.time()
         return result, end - start
+
     return wrapper
+
+def get_architectures():
+    return [
+        {"name": "SimpleCNN", "type": "standard"},
+        {"name": "Baseline", "type": "exp", "act": "relu", "bn": False, "drop": 0.0, "ks": 3},
+        {"name": "Stabilized", "type": "exp", "act": "relu", "bn": True, "drop": 0.3, "ks": 3},
+        {"name": "High-Vision", "type": "exp", "act": "relu", "bn": False, "drop": 0.0, "ks": 5},
+        {"name": "Modernist", "type": "exp", "act": "gelu", "bn": False, "drop": 0.0, "ks": 3},
+    ]
+
+def prepare_training_params(config, args):
+    if args.grid_search:
+        lrs = args.lr or config['training']['param_grid']['learning_rate']
+        bss = args.batch_size or config['training']['param_grid']['batch_size']
+        opts = args.optimizer or ["adam", "sgd"]
+        wds = args.weight_decay if args.weight_decay is not None else [0.0, 1e-4]
+        log_dir = args.logdir or config['training']['log_dir_grid']
+    else:
+        lrs = [args.lr[0]] if args.lr else [config['training']['learning_rate']]
+        bss = [args.batch_size[0]] if args.batch_size else [config['training']['batch_size']]
+        opts = [args.optimizer[0]] if args.optimizer else [config['training']['optimizer']]
+        wds = [args.weight_decay[0]] if args.weight_decay is not None else [config['training']['weight_decay']]
+        log_dir = args.logdir or config['training']['log_dir']
+
+    return lrs, bss, opts, wds, log_dir
