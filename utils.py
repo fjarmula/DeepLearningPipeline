@@ -14,7 +14,6 @@ def set_seed(seed=None):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
 
 
 def get_device():
@@ -46,6 +45,7 @@ def get_args():
     parser.add_argument('--optimizer', nargs='+', type=str, help='List of optimizers (e.g. adam sgd)')
     parser.add_argument("--weight_decay", nargs='+', type=float, help='List of weight decay values')
     parser.add_argument('--model', type=str, help='Specific model to run (e.g., SimpleCNN, Stabilized)')
+    parser.add_argument('--seed', nargs='+', type=int, help='List of random seeds')
 
     return parser.parse_args()
 
@@ -79,6 +79,7 @@ def get_architectures():
     ]
 
 def prepare_training_params(config, args):
+    seeds = args.seed or [None, None, None, 42, 42, 42]
     if args.grid_search:
         lrs = args.lr or config['training']['param_grid']['learning_rate']
         bss = args.batch_size or config['training']['param_grid']['batch_size']
@@ -92,4 +93,4 @@ def prepare_training_params(config, args):
         wds = [args.weight_decay[0]] if args.weight_decay is not None else [config['training']['weight_decay']]
         log_dir = args.logdir or config['training']['log_dir']
 
-    return lrs, bss, opts, wds, log_dir
+    return lrs, bss, opts, wds, log_dir, seeds
