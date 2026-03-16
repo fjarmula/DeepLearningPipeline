@@ -1,6 +1,7 @@
 import torch
 import itertools
 import copy
+from utils import measure_time
 
 from torch.ao.nn.quantized.functional import threshold
 
@@ -42,7 +43,7 @@ def validate(model, device, loader, criterion):
 
     return val_loss/len(loader), 100 * correct / total
 
-
+@measure_time
 def train_model(model, epochs, device, train_loader, test_loader, optimizer, criterion, writer):
     run_best_acc = 0.0
     best_model_state = None

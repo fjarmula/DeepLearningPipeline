@@ -26,7 +26,7 @@ def main():
     best_overall_config = None
     epochs = args.epochs or config['training']['epochs']
     criterion = nn.CrossEntropyLoss()
-    timed_train_model = measure_time(train_model)
+    #timed_train_model = measure_time(train_model)
 
     print("-" * 60)
     print(f"Starting Experiment Session")
@@ -58,7 +58,7 @@ def main():
 
         writer = SummaryWriter(log_dir=f"{log_dir}/{exp_name}")
 
-        (run_acc, run_best_weights, conv_epoch), duration = timed_train_model(
+        (run_acc, run_best_weights, conv_epoch), duration = train_model(
             model=model, epochs=epochs, device=device,
             train_loader=train_loader, test_loader=test_loader,
             optimizer=optimizer, criterion=criterion, writer=writer,

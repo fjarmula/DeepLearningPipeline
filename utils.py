@@ -60,8 +60,8 @@ def get_optimizer(model, opt_name, lr, wd):
 
 
 def measure_time(func):
-    @wraps(func)
     def wrapper(*args, **kwargs):
+
         start = time.time()
         result = func(*args, **kwargs)
         end = time.time()
