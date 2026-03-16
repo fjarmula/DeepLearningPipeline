@@ -29,7 +29,7 @@ def main():
     timed_train_model = measure_time(train_model)
 
     print("-" * 60)
-    print(f"Starting Flattened Experiment Session")
+    print(f"Starting Experiment Session")
     print(f"Total Runs to Execute: {total_runs}")
     print("-" * 60)
 
@@ -74,7 +74,7 @@ def main():
             }, config['training']['checkpoint_dir'], filename='best_model_model.pth.tar')
 
         writer.close()
-        print(f"Result: {run_acc:.2f}% | Time: {duration:.2f}s | Conv: {conv_epoch}")
+        print(f"Result: {run_acc:.2f}% | Time: {duration:.2f}s | Convergence epoch: {conv_epoch}")
 
     print("\n" + "=" * 60)
     print("FINAL SUMMARY")

@@ -11,6 +11,7 @@
   - **Loss Function:** Cross-Entropy Loss
   - **Weight Decay:** 0.0
 
+**directory**: *runs/mnist_experiment/grid_search_exp1*
 
 ### 2. Results Summary (Validation Accuracy)
 
@@ -60,6 +61,8 @@ For final deployment on the full MNIST dataset (60,000 images), **LR 0.001** is 
 
 **Fixed Parameters:** Batch Size = 8, Epochs = 20
 
+**directory**: *runs/mnist_experiment/grid_search_exp2*
+
 ---
 
 ### 1. Summary of Trials
@@ -101,6 +104,8 @@ For this CNN architecture on MNIST:
 Batch Size = 16,
 Optimizer = SGD,
 Weight Decay = 1e-05
+
+**directory**: *runs/mnist_experiment/different_architectures*
 
 ### Executive Summary
 The experiment successfully compared five different CNN architectures on the MNIST dataset using a consistent hyperparameter set:
@@ -148,3 +153,38 @@ The **SimpleCNN** is significantly over-parameterized for this task. It utilizes
 #### Modernist (GELU) vs. Baseline (ReLU)
 In this specific experiment, the **Baseline (ReLU)** slightly outperformed the **Modernist (GELU)** (97.90% vs 97.40%). This indicates that for a relatively simple feature set like MNIST, the extra computational complexity of the GELU activation function does not necessarily translate to higher accuracy.
 
+# 5. Impact of Random Seeds and Determinism
+
+### 1. Reproducibility Comparison
+The experiment compared three runs with **unfixed seeds** (Stochastic) and three runs with a **fixed seed** (Deterministic).
+
+| Run Type | Seeds Used | Accuracy Range | Result Consistency |
+| :--- | :--- | :--- | :--- |
+| **Unfixed** | None, None, None | 93.33% - 96.67% | **Variable** |
+| **Fixed** | 42, 42, 42 | 96.67% - 96.67% | **Identical** |
+
+---
+
+### 2. Key Conclusions
+
+##### A. The Variance of "None" (Unfixed Seeds)
+In Runs 1, 2, and 3, the model achieved different results (**96.67%, 93.33%, and 96.67%**) despite using identical hyperparameters.
+* **Why?** Without a fixed seed, the weight initialization and data shuffling order change every time. 
+* **Insight:** Run 2's lower performance (93.33%) shows that "bad luck" in initialization can lead a model to a sub-optimal local minimum, even with the same architecture.
+
+##### B. Success of Deep Determinism (Fixed Seeds)
+In Runs 4, 5, and 6, the results were **mathematically identical**.
+* **Loss & Accuracy:** If you look at Epoch 01 for all three runs, the Train Loss is exactly `2.2015`.
+* **Insight:** By setting `torch.manual_seed(42)` and configuring deterministic backends, we have eliminated variance. This is critical for debugging and for scientific papers where results must be verified by others.
+
+#### C. Convergence Behavior
+* **Unfixed Seeds:** Convergence epochs varied slightly (up to Epoch 50).
+* **Fixed Seeds:** All fixed-seed runs reached their peak at exactly the same time (Convergence Epoch 43). 
+* **Stability:** The "Stabilized" architecture (BatchNorm + Dropout) shows resilience; even with the variance in unfixed seeds, it consistently stayed above 93%, proving the architecture is robust regardless of the starting point.
+
+---
+
+### 3. Technical Summary
+* **Total Runs:** 6
+* **Best Accuracy:** 96.67% 
+* **Observation:** Fixing the seed does not necessarily give a *better* result than a random seed, but it gives a *predictable* one. Run 3 (unfixed) and Run 4 (fixed) both hit 96.67%, but only Run 4 can be perfectly recreated on another machine.
