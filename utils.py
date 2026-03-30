@@ -47,6 +47,7 @@ def get_args():
     parser.add_argument("--weight_decay", nargs='+', type=float, help='List of weight decay values')
     parser.add_argument('--model', type=str, help='Specific model to run (e.g., SimpleCNN, Stabilized)')
     parser.add_argument('--seed', nargs='+', type=int, help='List of random seeds')
+    parser.add_argument('--criterion', type=str, help='Specific criterion to run (e.g., CrossEntropyLoss)')
 
     return parser.parse_args()
 
@@ -59,6 +60,15 @@ def get_optimizer(model, opt_name, lr, wd):
         return torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
     raise ValueError(f"Optimizer {opt_name} not supported")
 
+
+# TODO - repair this function
+def get_criterion(criterion_name):
+    criterion_name = criterion_name.lower()
+    if criterion_name == "manual":
+        return CrossEntropyLossManual()
+    if criterion_name == "standard" or criterion_name is None:
+        return nn.CrossEntropyLoss()
+    raise ValueError(f"Criterion {criterion_name} not supported")
 
 def measure_time(func):
     def wrapper(*args, **kwargs):
@@ -96,6 +106,9 @@ def prepare_training_params(config, args):
 
     return lrs, bss, opts, wds, log_dir, seeds
 
+
+
+# Class just for easier use in main
 class CrossEntropyLossManual(nn.Module):
     def __init__(self):
         super().__init__()
