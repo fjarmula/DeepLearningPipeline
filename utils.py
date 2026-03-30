@@ -7,7 +7,8 @@ import random
 import time
 from functools import wraps
 from model import SimpleCNN
-
+import torch.nn as nn
+from torch.nn import functional as F
 
 def set_seed(seed=None):
     if seed is not None:
@@ -94,3 +95,13 @@ def prepare_training_params(config, args):
         log_dir = args.logdir or config['training']['log_dir']
 
     return lrs, bss, opts, wds, log_dir, seeds
+
+class CrossEntropyLossManual(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, logits, labels):
+        probs = F.softmax(logits, dim=1)
+        log_probs = torch.log(probs)
+        loss = -log_probs[range(labels.size(0)), labels].mean()
+        return loss
