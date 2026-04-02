@@ -1,3 +1,66 @@
+# CLI Parameters
+
+- `--config`  
+  Sets the path to the configuration file (default: `config.yaml`).
+
+- `--epochs`  
+  Overrides the number of training epochs.
+
+- `--logdir`  
+  Sets the directory where logs will be saved.
+
+- `--grid_search`  
+  Enables grid search mode (runs all combinations of provided hyperparameters).
+
+---
+
+## Hyperparameters
+
+- `--lr`  
+  Sets learning rate(s).  
+  Accepts one or multiple values.
+
+- `--batch_size`  
+  Sets batch size(s).  
+  Accepts one or multiple values.
+
+- `--optimizer`  
+  Sets optimizer(s).  
+  Supported: `sgd`, `adam`.
+
+- `--weight_decay`  
+  Sets weight decay (L2 regularization).  
+  Accepts one or multiple values.
+
+- `--seed`  
+  Sets random seed(s) for reproducibility.  
+  Accepts one or multiple values.
+
+---
+
+## Model & Loss
+
+- `--model`  
+  Sets the model architecture to run  
+  (e.g., `SimpleCNN`, `Baseline`, `Stabilized`, etc.).
+
+- `--criterion`  
+  Sets the loss function.  
+  Supported:  
+  - `cross_entropy` (PyTorch built-in)  
+  - `manual` (custom implementation)
+
+---
+
+## Behavior Notes
+
+- Without `--grid_search`:  
+  - Only one value per parameter is used  
+  - If multiple values are provided, only the **first** is taken  
+
+- With `--grid_search`:  
+  - All combinations of provided parameter values are evaluated  
+
 # 1. Hyperparameter Analysis
 ### 1. Methodology
 - **Training Subset:** 800 images
@@ -15,12 +78,12 @@
 
 ### 2. Results Summary (Validation Accuracy)
 
-| Learning Rate | BS: 8 | BS: 16 | BS: 32 | BS: 64 | BS: 128 |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **0.0001** | 92.00% | 93.00% | 93.00% | 93.00% | 90.00% |
-| **0.001** | **97.00%** | 94.00% | 95.00% | 94.00% | 93.00% |
-| **0.01** | 95.00% | 94.00% | 96.00% | 14.00%* | 96.00% |
-| **0.1** | 15.00% | 15.00% | 15.00% | 14.00% | 15.00% |
+| Learning Rate | BS: 8      | BS: 16 | BS: 32 | BS: 64  | BS: 128 |
+|:--------------|:-----------|:-------|:-------|:--------|:--------|
+| **0.0001**    | 92.00%     | 93.00% | 93.00% | 93.00%  | 90.00%  |
+| **0.001**     | **97.00%** | 94.00% | 95.00% | 94.00%  | 93.00%  |
+| **0.01**      | 95.00%     | 94.00% | 96.00% | 14.00%* | 96.00%  |
+| **0.1**       | 15.00%     | 15.00% | 15.00% | 14.00%  | 15.00%  |
 
 
 ### 3. Best Configuration
@@ -67,16 +130,16 @@ For final deployment on the full MNIST dataset (60,000 images), **LR 0.001** is 
 
 ### 1. Summary of Trials
 
-| Trial | LR | Optimizer | Weight Decay | Best Val Acc |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | 0.01 | Adam | 0.0 | 87.00% |
-| 2 | 0.01 | Adam | 0.0001 | 91.00%|
-| 3 | 0.01 | SGD | 0.0 | 93.00% |
-| 4 | 0.01 | SGD | 0.0001 | **95.00%** |
-| 5 | 0.0001 | Adam | 0.0 | 93.00% |
-| 6 | 0.0001 | Adam | 0.0001 | 94.00% |
-| 7 | 0.0001 | SGD | 0.0 | 84.00% |
-| 8 | 0.0001 | SGD | 0.0001 | 84.00% |
+| Trial | LR     | Optimizer | Weight Decay | Best Val Acc |
+|:------|:-------|:----------|:-------------|:-------------|
+| 1     | 0.01   | Adam      | 0.0          | 87.00%       |
+| 2     | 0.01   | Adam      | 0.0001       | 91.00%       |
+| 3     | 0.01   | SGD       | 0.0          | 93.00%       |
+| 4     | 0.01   | SGD       | 0.0001       | **95.00%**   |
+| 5     | 0.0001 | Adam      | 0.0          | 93.00%       |
+| 6     | 0.0001 | Adam      | 0.0001       | 94.00%       |
+| 7     | 0.0001 | SGD       | 0.0          | 84.00%       |
+| 8     | 0.0001 | SGD       | 0.0001       | 84.00%       |
 
 ---
 
@@ -114,13 +177,13 @@ The experiment successfully compared five different CNN architectures on the MNI
 * **Optimizer:** SGD
 * **Weight Decay:** 1e-05
 
-| Model Name | Type | Activation | Batch Norm | Dropout | Kernel Size | MaxPool Layers |
-| :--- | :--- | :--- | :--- | :--- | :--- |:--- |
-| **SimpleCNN** | Standard | ReLU | No | 0.0 | 3 | 1 |
-| **Baseline** | Experimental | ReLU | No | 0.0 | 3 | 2 |
-| **Stabilized** | Experimental | ReLU | Yes | 0.3 | 3 | 2 |
-| **High-Vision** | Experimental | ReLU | No | 0.0 | 5 | 2 |
-| **Modernist** | Experimental | GELU | No | 0.0 | 3 |  2 |
+| Model Name      | Type         | Activation | Batch Norm | Dropout | Kernel Size | MaxPool Layers |
+|:----------------|:-------------|:-----------|:-----------|:--------|:------------|:---------------|
+| **SimpleCNN**   | Standard     | ReLU       | No         | 0.0     | 3           | 1              |
+| **Baseline**    | Experimental | ReLU       | No         | 0.0     | 3           | 2              |
+| **Stabilized**  | Experimental | ReLU       | Yes        | 0.3     | 3           | 2              |
+| **High-Vision** | Experimental | ReLU       | No         | 0.0     | 5           | 2              |
+| **Modernist**   | Experimental | GELU       | No         | 0.0     | 3           | 2              |
 
 The **Stabilized** model achieved the highest accuracy (**98.50%**), while the **SimpleCNN** proved to be the least efficient, requiring over 1.1 million parameters to achieve the lowest performance of the group.
 
@@ -128,13 +191,13 @@ The **Stabilized** model achieved the highest accuracy (**98.50%**), while the *
 
 ### 1. Performance Comparison Table
 
-| Architecture | Accuracy (%) | Parameters | Time (s) | Convergence Epoch |
-| :--- | :--- | :--- | :--- | :--- |
-| **Stabilized** | **98.50** | 207,018 | 62.35 | 38 |
-| **High-Vision** | 98.00 | 215,370 | 53.34 | 30 |
-| **Baseline** | 97.90 | 206,922 | 51.52 | 36 |
-| **Modernist** | 97.40 | 206,922 | 51.65 | 33 |
-| **SimpleCNN** | 97.30 | 1,199,882 | 57.30 | 27 |
+| Architecture    | Accuracy (%) | Parameters | Time (s) | Convergence Epoch |
+|:----------------|:-------------|:-----------|:---------|:------------------|
+| **Stabilized**  | **98.50**    | 207,018    | 62.35    | 38                |
+| **High-Vision** | 98.00        | 215,370    | 53.34    | 30                |
+| **Baseline**    | 97.90        | 206,922    | 51.52    | 36                |
+| **Modernist**   | 97.40        | 206,922    | 51.65    | 33                |
+| **SimpleCNN**   | 97.30        | 1,199,882  | 57.30    | 27                |
 
 ---
 
@@ -154,14 +217,15 @@ The **SimpleCNN** is significantly over-parameterized for this task. It utilizes
 In this specific experiment, the **Baseline (ReLU)** slightly outperformed the **Modernist (GELU)** (97.90% vs 97.40%). This indicates that for a relatively simple feature set like MNIST, the extra computational complexity of the GELU activation function does not necessarily translate to higher accuracy.
 
 # 5. Impact of Random Seeds and Determinism
+**directory**: *runs/mnist_experiment/different_seed*
 
 ### 1. Reproducibility Comparison
 The experiment compared three runs with **unfixed seeds** (Stochastic) and three runs with a **fixed seed** (Deterministic).
 
-| Run Type | Seeds Used | Accuracy Range | Result Consistency |
-| :--- | :--- | :--- | :--- |
-| **Unfixed** | None, None, None | 93.33% - 96.67% | **Variable** |
-| **Fixed** | 42, 42, 42 | 96.67% - 96.67% | **Identical** |
+| Run Type    | Seeds Used       | Accuracy Range  | Result Consistency |
+|:------------|:-----------------|:----------------|:-------------------|
+| **Unfixed** | None, None, None | 93.33% - 96.67% | **Variable**       |
+| **Fixed**   | 42, 42, 42       | 96.67% - 96.67% | **Identical**      |
 
 ---
 
@@ -170,7 +234,7 @@ The experiment compared three runs with **unfixed seeds** (Stochastic) and three
 ##### A. The Variance of "None" (Unfixed Seeds)
 In Runs 1, 2, and 3, the model achieved different results (**96.67%, 93.33%, and 96.67%**) despite using identical hyperparameters.
 * **Why?** Without a fixed seed, the weight initialization and data shuffling order change every time. 
-* **Insight:** Run 2's lower performance (93.33%) shows that "bad luck" in initialization can lead a model to a sub-optimal local minimum, even with the same architecture.
+* **Insight:** Run 2's lower performance (93.33%) shows that "bad luck" in initialization can lead a model to a suboptimal local minimum, even with the same architecture.
 
 ##### B. Success of Deep Determinism (Fixed Seeds)
 In Runs 4, 5, and 6, the results were **mathematically identical**.

@@ -25,8 +25,7 @@ def main():
     global_best_acc = 0.0
     best_overall_config = None
     epochs = args.epochs or config['training']['epochs']
-    criterion = get_criterion(args.criterion)
-    #timed_train_model = measure_time(train_model)
+    criterion = get_criterion(args.criterion) if args.criterion else get_criterion(config['training']['criterion'])
 
     print("-" * 60)
     print(f"Starting Experiment Session")

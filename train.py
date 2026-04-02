@@ -2,9 +2,7 @@ import torch
 import itertools
 import copy
 from utils import measure_time
-
 from torch.ao.nn.quantized.functional import threshold
-
 from utils import save_checkpoint
 
 def train_one_epoch(model, device, loader, optimizer, criterion):

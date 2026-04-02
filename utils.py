@@ -61,12 +61,11 @@ def get_optimizer(model, opt_name, lr, wd):
     raise ValueError(f"Optimizer {opt_name} not supported")
 
 
-# TODO - repair this function
 def get_criterion(criterion_name):
     criterion_name = criterion_name.lower()
     if criterion_name == "manual":
         return CrossEntropyLossManual()
-    if criterion_name == "standard" or criterion_name is None:
+    if criterion_name == "cross_entropy":
         return nn.CrossEntropyLoss()
     raise ValueError(f"Criterion {criterion_name} not supported")
 
@@ -90,7 +89,7 @@ def get_architectures():
     ]
 
 def prepare_training_params(config, args):
-    seeds = args.seed or [None, None, None, 42, 42, 42]
+    seeds = args.seed or [config['training']['seed']]
     if args.grid_search:
         lrs = args.lr or config['training']['param_grid']['learning_rate']
         bss = args.batch_size or config['training']['param_grid']['batch_size']
