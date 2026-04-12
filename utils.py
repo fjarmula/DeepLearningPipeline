@@ -39,13 +39,13 @@ def get_args():
     parser.add_argument('--config', type=str, default='config.yaml')
     parser.add_argument('--epochs', type=int)
     parser.add_argument('--grid_search', action='store_true')
-    parser.add_argument('--logdir', type=str)
+    parser.add_argument('--logdir', type=str, default='runs/mnist_experiment/default')
 
     parser.add_argument('--lr', nargs='+', type=float, help='List of learning rates')
     parser.add_argument('--batch_size', nargs='+', type=int, help='List of batch sizes')
     parser.add_argument('--optimizer', nargs='+', type=str, help='List of optimizers (e.g. adam sgd)')
     parser.add_argument("--weight_decay", nargs='+', type=float, help='List of weight decay values')
-    parser.add_argument('--model', type=str, help='Specific model to run (e.g., SimpleCNN, Stabilized)')
+    parser.add_argument('--model', type=str, default='SimpleCNN', help='Specific model to run (e.g., SimpleCNN, Stabilized)')
     parser.add_argument('--seed', nargs='+', type=int, help='List of random seeds')
     parser.add_argument('--criterion', type=str, help='Specific criterion to run (e.g., CrossEntropyLoss)')
     parser.add_argument('--transform', type=str, default='standard', choices=['standard', 'augmented'],

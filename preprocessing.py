@@ -16,14 +16,15 @@ def get_transform(aug_type='standard'):
 
 
 def load_datasets(config, transform_type='standard'):
+    g = torch.Generator().manual_seed(42)
     transform = get_transform(transform_type)
 
     train_dataset = datasets.MNIST(root="./data", train=True, download=True, transform=transform)
     test_dataset = datasets.MNIST(root="./data", train=False, download=True, transform=transform)
 
     # Use random indices to avoid sampling bias from ordered datasets
-    train_indices = torch.randperm(len(train_dataset))[:config['data']['subset_train']]
-    test_indices = torch.randperm(len(test_dataset))[:config['data']['subset_test']]
+    train_indices = torch.randperm(len(train_dataset), generator=g)[:config['data']['subset_train']]
+    test_indices = torch.randperm(len(test_dataset,), generator=g)[:config['data']['subset_test']]
 
     train_subset = Subset(train_dataset, train_indices)
     test_subset = Subset(test_dataset, test_indices)

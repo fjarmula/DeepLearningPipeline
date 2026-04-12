@@ -71,11 +71,12 @@ def main():
         if run_acc > global_best_acc:
             global_best_acc = run_acc
             best_overall_config = {"arch": arch['name'], "lr": lr, "bs": bs, "seed": seed}
+            checkpoint_name = f"best_{arch['name']}_lr{lr}_bs{bs}_opt{opt_name}.pth.tar"
             save_checkpoint({
                 'model_state_dict': run_best_weights,
                 'acc': global_best_acc,
                 'config': best_overall_config
-            }, config['training']['checkpoint_dir'], filename=f"best_{arch['name']}_model.pth.tar") # with a view to whole grid search
+            }, config['training']['checkpoint_dir'], filename=checkpoint_name)
 
         writer.close()
         print(f"Result: {run_acc:.2f}% | Time: {duration:.2f}s | Convergence epoch: {conv_epoch}")
