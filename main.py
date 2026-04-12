@@ -16,7 +16,6 @@ def main():
     architectures = get_architectures()
     lrs, bss, opts, wds, log_dir, seeds = prepare_training_params(config, args)
     train_subset, test_subset = load_datasets(config, transform_type=args.transform)
-
     active_archs = [a for a in architectures if not args.model or a['name'].lower() == args.model.lower()]
 
     experiments = list(itertools.product(seeds, active_archs, lrs, bss, opts, wds))
@@ -31,13 +30,18 @@ def main():
     print(f"Starting Experiment Session")
     print(f"Total Runs to Execute: {total_runs}")
     print(f'{criterion=}:')
+    print(f'{train_subset.transform_type=}, {test_subset.transform_type=}')
     print("-" * 60)
 
-    for idx, (seed, arch, lr, bs, opt_name, wd) in enumerate(experiments, 1):
+    # Pre-create data loaders for each batch size to avoid redundant creation
+    dataloaders_cache = {
+        bs: get_dataloaders(train_subset, test_subset, bs) for bs in bss
+    }
 
+    for idx, (seed, arch, lr, bs, opt_name, wd) in enumerate(experiments, 1):
         set_seed(seed)
 
-        train_loader, test_loader = get_dataloaders(train_subset, test_subset, bs)
+        train_loader, test_loader = dataloaders_cache[bs]
 
         if arch['type'] == "standard":
             model = SimpleCNN().to(device)
@@ -51,7 +55,7 @@ def main():
 
         optimizer = get_optimizer(model, opt_name, lr, wd)
         param_count = sum(p.numel() for p in model.parameters())
-        exp_name = f"{arch['name']}_lr{lr}_bs{bs}_{opt_name}_seed{seed}"
+        exp_name = f"{arch['name']}_lr{lr}_bs{bs}_{opt_name}_seed{seed}_{train_subset.transform_type}"
 
         print(f"\nRun [{idx}/{total_runs}] | Arch: {arch['name']} | Seed: {seed}")
         print(f"Params: {param_count:,} | LR: {lr} | BS: {bs} | Opt: {opt_name}")
@@ -71,7 +75,7 @@ def main():
                 'model_state_dict': run_best_weights,
                 'acc': global_best_acc,
                 'config': best_overall_config
-            }, config['training']['checkpoint_dir'], filename='best_model_model.pth.tar')
+            }, config['training']['checkpoint_dir'], filename=f"best_{arch['name']}_model.pth.tar") # with a view to whole grid search
 
         writer.close()
         print(f"Result: {run_acc:.2f}% | Time: {duration:.2f}s | Convergence epoch: {conv_epoch}")

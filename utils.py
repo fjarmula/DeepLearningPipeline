@@ -45,7 +45,7 @@ def get_args():
     parser.add_argument('--batch_size', nargs='+', type=int, help='List of batch sizes')
     parser.add_argument('--optimizer', nargs='+', type=str, help='List of optimizers (e.g. adam sgd)')
     parser.add_argument("--weight_decay", nargs='+', type=float, help='List of weight decay values')
-    parser.add_argument('--model', type=str, default='SimpleCNN', help='Specific model to run (e.g., SimpleCNN, Stabilized)')
+    parser.add_argument('--model', type=str, help='Specific model to run (e.g., SimpleCNN, Stabilized)')
     parser.add_argument('--seed', nargs='+', type=int, help='List of random seeds')
     parser.add_argument('--criterion', type=str, help='Specific criterion to run (e.g., CrossEntropyLoss)')
     parser.add_argument('--transform', type=str, default='standard', choices=['standard', 'augmented'],
@@ -95,8 +95,8 @@ def prepare_training_params(config, args):
     if args.grid_search:
         lrs = args.lr or config['training']['param_grid']['learning_rate']
         bss = args.batch_size or config['training']['param_grid']['batch_size']
-        opts = args.optimizer or ["adam", "sgd"]
-        wds = args.weight_decay if args.weight_decay is not None else [0.0, 1e-4]
+        opts = args.optimizer or config['training']['param_grid'].get('optimizers', ["adam", "sgd"])
+        wds = args.weight_decay if args.weight_decay is not None else config['training']['param_grid'].get('weight_decay', [0.0, 1e-4])
         log_dir = args.logdir or config['training']['log_dir_grid']
     else:
         lrs = [args.lr[0]] if args.lr else [config['training']['learning_rate']]

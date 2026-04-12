@@ -2,7 +2,6 @@ import torch
 import itertools
 import copy
 from utils import measure_time
-from torch.ao.nn.quantized.functional import threshold
 from utils import save_checkpoint
 
 def train_one_epoch(model, device, loader, optimizer, criterion):
@@ -48,7 +47,7 @@ def train_model(model, epochs, device, train_loader, test_loader, optimizer, cri
 
     prev_loss = float('inf')
     convergence_epoch = epochs
-    threshold = 0.001
+    conv_threshold = 0.001
     patience_counter = 0
 
     for epoch in range(epochs):
@@ -58,13 +57,14 @@ def train_model(model, epochs, device, train_loader, test_loader, optimizer, cri
         writer.add_scalars('Loss', {'train': train_loss, 'val': val_loss}, epoch)
         writer.add_scalars('Accuracy', {'train': train_acc, 'val': val_acc}, epoch)
 
-        loss_diff = abs(prev_loss - train_loss)
-        if loss_diff < threshold:
+        loss_diff = prev_loss - train_loss
+        if loss_diff > 0 and loss_diff < conv_threshold:
             patience_counter += 1
         else:
             patience_counter = 0
 
-        if patience_counter >= 3 and convergence_epoch == epochs: # I do not implement early stopping as for now se we need to train for all epochs
+        if patience_counter >= 3 and convergence_epoch == epochs: 
+            # I do not implement early stopping as for now so we need to train for all epochs
             # to compare the results, but track the epoch of convergence.
             convergence_epoch = epoch + 1
 

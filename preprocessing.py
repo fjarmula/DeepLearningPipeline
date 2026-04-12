@@ -21,8 +21,15 @@ def load_datasets(config, transform_type='standard'):
     train_dataset = datasets.MNIST(root="./data", train=True, download=True, transform=transform)
     test_dataset = datasets.MNIST(root="./data", train=False, download=True, transform=transform)
 
-    train_subset = Subset(train_dataset, range(config['data']['subset_train']))
-    test_subset = Subset(test_dataset, range(config['data']['subset_test']))
+    # Use random indices to avoid sampling bias from ordered datasets
+    train_indices = torch.randperm(len(train_dataset))[:config['data']['subset_train']]
+    test_indices = torch.randperm(len(test_dataset))[:config['data']['subset_test']]
+
+    train_subset = Subset(train_dataset, train_indices)
+    test_subset = Subset(test_dataset, test_indices)
+
+    train_subset.transform_type = transform_type
+    test_subset.transform_type = transform_type
 
     return train_subset, test_subset
 

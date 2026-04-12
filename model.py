@@ -7,7 +7,7 @@ class SimpleCNN(nn.Module):
         super().__init__()
         self.conv1 = nn.Conv2d(1, 32, 3, 1)
         self.conv2 = nn.Conv2d(32, 64, 3, 1)
-        self.fc1 = nn.Linear(9216, 128)
+        self.fc1 = nn.Linear(64 * 12 * 12, 128)
         self.fc2 = nn.Linear(128, 10)
 
     def forward(self, x):
@@ -29,10 +29,11 @@ class ExperimentalCNN(nn.Module):
             'gelu': nn.GELU()
         }
         self.act = acts.get(activation.lower())
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=kernel_size, padding=(kernel_size-1)//2)
+        padding = kernel_size // 2
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=kernel_size, padding=padding)
         self.bn1 = nn.BatchNorm2d(16) if use_batchnorm else nn.Identity()
 
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=kernel_size, padding=(kernel_size-1)//2)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=kernel_size, padding=padding)
         self.bn2 = nn.BatchNorm2d(32) if use_batchnorm else nn.Identity()
 
         self.pool = nn.MaxPool2d(2, 2)
