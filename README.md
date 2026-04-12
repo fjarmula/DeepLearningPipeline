@@ -11,6 +11,8 @@
 
 - `--grid_search`  
   Enables grid search mode (runs all combinations of provided hyperparameters).
+- `--transform`  
+  Sets the data transformation pipeline to use.
 
 ---
 
@@ -216,7 +218,7 @@ The **SimpleCNN** is significantly over-parameterized for this task. It utilizes
 #### Modernist (GELU) vs. Baseline (ReLU)
 In this specific experiment, the **Baseline (ReLU)** slightly outperformed the **Modernist (GELU)** (97.90% vs 97.40%). This indicates that for a relatively simple feature set like MNIST, the extra computational complexity of the GELU activation function does not necessarily translate to higher accuracy.
 
-# 5. Impact of Random Seeds and Determinism
+# 4. Impact of Random Seeds and Determinism
 **directory**: *runs/mnist_experiment/different_seed*
 
 ### 1. Reproducibility Comparison
@@ -252,3 +254,25 @@ In Runs 4, 5, and 6, the results were **mathematically identical**.
 * **Total Runs:** 6
 * **Best Accuracy:** 96.67% 
 * **Observation:** Fixing the seed does not necessarily give a *better* result than a random seed, but it gives a *predictable* one. Run 3 (unfixed) and Run 4 (fixed) both hit 96.67%, but only Run 4 can be perfectly recreated on another machine.
+
+# 5. Data Augmentation Performance Analysis
+**directory**: *runs/mnist_experiment/augmentation* (vs. *augmentation_none*)
+
+### 1. Performance Comparison
+| Configuration | Final Accuracy | Final Train Loss | Time (s) |
+|:--------------|:---------------|:-----------------|:---------|
+| **Standard**  | **93.33%**     | **0.0229**       | 3.99s    |
+| **Augmented** | 86.67%         | 0.5607           | 4.94s    |
+
+### 2. Key Conclusions
+
+#### A. Data Augmentation is "Harder"
+The augmented run showed a much higher training loss (0.56 vs 0.02). By rotating and shifting images, we prevent the model from memorizing pixel-specific locations, forcing it to learn more generalized features.
+
+#### B. The Accuracy Gap
+In a 50-epoch window, the **Standard** run achieved 93.33% while the **Augmented** run hit 86.67%. Standard training allows the model to "perfect" clean, centered digits quickly, while Augmented training requires more time (epochs) to generalize across the increased variety.
+
+#### C. Generalization vs. Overfitting
+The Standard run's very low loss (0.02) suggests potential overfitting to the specific orientation of the MNIST dataset. The Augmented model, while showing lower accuracy here, is likely much more robust to real-world variations (tilted or shifted handwriting).
+
+---

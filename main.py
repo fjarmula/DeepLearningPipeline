@@ -15,7 +15,7 @@ def main():
 
     architectures = get_architectures()
     lrs, bss, opts, wds, log_dir, seeds = prepare_training_params(config, args)
-    train_subset, test_subset = load_datasets(config)
+    train_subset, test_subset = load_datasets(config, transform_type=args.transform)
 
     active_archs = [a for a in architectures if not args.model or a['name'].lower() == args.model.lower()]
 
