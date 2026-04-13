@@ -44,9 +44,11 @@ def main():
         train_loader, test_loader = dataloaders_cache[bs]
 
         if arch['type'] == "standard":
-            model = SimpleCNN().to(device)
+            model = SimpleCNN(config['model']['input_size'], config['model']['num_classes']).to(device)
         else:
             model = ExperimentalCNN(
+                config['model']['input_size'],
+                config['model']['num_classes'],
                 activation=arch['act'],
                 use_batchnorm=arch['bn'],
                 dropout_p=arch['drop'],

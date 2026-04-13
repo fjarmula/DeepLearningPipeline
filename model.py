@@ -3,12 +3,12 @@ from torch import nn
 import torch.nn.functional as F
 
 class SimpleCNN(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size, output_size):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        self.conv1 = nn.Conv2d(input_size, 32, 3, 1)
         self.conv2 = nn.Conv2d(32, 64, 3, 1)
         self.fc1 = nn.Linear(64 * 12 * 12, 128)
-        self.fc2 = nn.Linear(128, 10)
+        self.fc2 = nn.Linear(128, output_size)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -20,7 +20,7 @@ class SimpleCNN(nn.Module):
         return x
 
 class ExperimentalCNN(nn.Module):
-    def __init__(self, activation='relu', use_batchnorm=False, dropout_p=0.0, kernel_size=3):
+    def __init__(self, input_size, output_size, activation='relu', use_batchnorm=False, dropout_p=0.0, kernel_size=3):
         super().__init__()
         acts = {
             'relu': nn.ReLU(),
@@ -30,7 +30,7 @@ class ExperimentalCNN(nn.Module):
         }
         self.act = acts.get(activation.lower())
         padding = kernel_size // 2
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=kernel_size, padding=padding)
+        self.conv1 = nn.Conv2d(input_size, 16, kernel_size=kernel_size, padding=padding)
         self.bn1 = nn.BatchNorm2d(16) if use_batchnorm else nn.Identity()
 
         self.conv2 = nn.Conv2d(16, 32, kernel_size=kernel_size, padding=padding)
@@ -40,7 +40,7 @@ class ExperimentalCNN(nn.Module):
 
         self.fc1 = nn.Linear(32 * 7 * 7, 128)
         self.dropout = nn.Dropout(p=dropout_p)
-        self.fc2 = nn.Linear(128, 10)
+        self.fc2 = nn.Linear(128, output_size)
 
     def forward(self, x):
         x = self.pool(self.act(self.bn1(self.conv1(x))))
