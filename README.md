@@ -1,3 +1,7 @@
+# Technical Report: MNIST Architecture & Hyperparameter Optimization  
+**Focus:** Analysis of Model Stability and Generalization
+
+
 # CLI Parameters
 
 - `--config`  
